@@ -41,6 +41,10 @@ Les tests de la logique métier sont dans le dépôt de déploiement, côté mac
 
 ## Déploiement
 
-- Adresse : <http://69.62.108.1/>
+- **HTTPS** : <https://69.62.108.1.nip.io/> (certificat Let's Encrypt, renouvellement automatique)
+- **HTTP** : <http://69.62.108.1/> (vhost par défaut du serveur)
 - Racine serveur : `/var/www/mon_notebook` (clone du dépôt, servi par nginx)
 - Mise à jour : `ssh root@69.62.108.1 /root/update-mon-notebook.sh`
+
+Fichiers nginx : `/etc/nginx/sites-available/mon-notebook` (port 80, site par IP)
+et `/etc/nginx/sites-available/mon-notebook-nipio` (HTTPS + redirection).
