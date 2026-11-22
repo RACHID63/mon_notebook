@@ -1,98 +1,580 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mon Notebook</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Notebook Personnalisable</title>
+    <!-- Chargement de Tailwind CSS pour un design moderne et réactif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Police Google Fonts Inter & Lora (style manuscrit/littéraire pour l'effet papyrus) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <!-- Icônes Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            /* Texture subtile de fibres de papyrus */
+            background-image: 
+                radial-gradient(rgba(160, 120, 60, 0.08) 1px, transparent 0),
+                repeating-linear-gradient(0deg, rgba(180, 140, 80, 0.03) 0px, rgba(180, 140, 80, 0.03) 1px, transparent 1px, transparent 4px);
+            background-size: 24px 24px, 100% 4px;
+        }
+        .papyrus-sheet {
+            background-color: #fbf5e6;
+            background-image: linear-gradient(to bottom right, rgba(255, 250, 235, 0.8), rgba(238, 221, 187, 0.5));
+            box-shadow: 0 12px 32px -4px rgba(92, 64, 24, 0.18), inset 0 0 40px rgba(212, 182, 126, 0.25);
+        }
+        .papyrus-card {
+            background-color: #fdf9f0;
+            border-color: #dec9a0;
+        }
+        .papyrus-font {
+            font-family: 'Lora', Georgia, serif;
+        }
+        /* Animation pour les notifications toast */
+        @keyframes slideIn {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-enter {
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        /* Effet de flou élégant lors du verrouillage */
+        .locked-blur {
+            filter: blur(12px);
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
 </head>
-<body>
-  <main id="notebook-container">
-    <header>
-      <h1>Mon Notebook</h1>
-      <div class="header-actions">
-        <span id="lock-status" class="badge">Déverrouillé</span>
-        <button id="toggle-lock" type="button">Verrouiller</button>
-        <button id="toggle-settings" type="button" class="ghost">Paramètres</button>
-      </div>
-    </header>
+<body class="bg-[#ebd9b4] text-[#3d2b1f] min-h-screen flex flex-col items-center py-6 px-4 sm:px-6 lg:px-8">
 
-    <p id="flash" class="flash" role="status" hidden></p>
+    <!-- Conteneur principal du Notebook -->
+    <div id="notebook-wrapper" class="w-full max-w-6xl papyrus-sheet rounded-2xl border border-[#cfa96e] overflow-hidden transition-all duration-300">
+        
+        <!-- En-tête (Header) -->
+        <header class="bg-[#3d2817] text-[#f9eed7] px-6 py-5 flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-[#b88b4a]">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-[#9c6621] rounded-xl shadow-inner border border-[#d4a359]/40">
+                    <i data-lucide="scroll-text" class="w-6 h-6 text-[#fdf6e7]"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight papyrus-font text-[#fdf6e7]">Mon Notebook Papyrus</h1>
+                    <p class="text-xs text-[#d6be96]">Manuscrit privé, multimédia et personnalisable</p>
+                </div>
+            </div>
 
-    <section id="settings-panel" class="panel" hidden>
-      <h2>Paramètres</h2>
+            <!-- Contrôles de sécurité / Mot de passe -->
+            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+                <div class="relative flex-1 sm:flex-initial">
+                    <i data-lucide="key-round" class="w-4 h-4 text-[#c2a679] absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input 
+                        type="password" 
+                        id="password-input" 
+                        placeholder="Mot de passe (défaut: 1234)" 
+                        class="w-full sm:w-56 pl-9 pr-3 py-2 bg-[#2b1b0e] border border-[#6e4c2a] rounded-xl text-sm text-[#fdf6e7] placeholder-[#a88d67] focus:outline-none focus:ring-2 focus:ring-[#c68b38] transition"
+                    >
+                </div>
+                <button 
+                    id="lock-btn" 
+                    class="flex items-center gap-2 px-4 py-2 bg-[#9c6621] hover:bg-[#b37729] active:bg-[#7d5018] text-[#fdf6e7] text-sm font-medium rounded-xl shadow-sm transition cursor-pointer"
+                >
+                    <i id="lock-icon" data-lucide="lock" class="w-4 h-4"></i>
+                    <span id="lock-text">Verrouiller</span>
+                </button>
+            </div>
+        </header>
 
-      <div class="row">
-        <label for="bg-color">Couleur de fond</label>
-        <input type="color" id="bg-color" value="#f0f0f0">
-        <label for="text-color">Couleur du texte</label>
-        <input type="color" id="text-color" value="#333333">
-        <button id="save-settings" type="button">Appliquer</button>
-      </div>
+        <!-- Écran de verrouillage superposé (visible uniquement quand verrouillé) -->
+        <div id="lock-overlay" class="hidden flex-col items-center justify-center py-24 px-4 text-center bg-[#f6ebd4]/95">
+            <div class="w-16 h-16 bg-[#ead6ad] text-[#8c5819] rounded-full flex items-center justify-center mb-4 shadow-sm border border-[#cfa96e]">
+                <i data-lucide="shield-lock" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-[#3d2817] papyrus-font mb-2">Manuscrit Scellé</h2>
+            <p class="text-[#6e5239] max-w-md mb-6">Vos écrits, illustrations et enregistrements sont protégés. Saisissez votre mot de passe ci-dessus pour briser le sceau.</p>
+            <p class="text-xs text-[#8a6b4e]">Indice : le mot de passe par défaut est <code class="bg-[#e6d3ad] px-1.5 py-0.5 rounded text-[#3d2817]">1234</code> (modifiable dans les paramètres)</p>
+        </div>
 
-      <div class="row">
-        <label for="new-password">Mot de passe</label>
-        <input type="password" id="new-password" placeholder="Nouveau mot de passe" autocomplete="new-password">
-        <button id="save-password" type="button">Changer</button>
-      </div>
+        <!-- Zone de contenu principale -->
+        <main id="notebook-content" class="p-6 transition-all duration-300">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Colonne de gauche : Paramètres & Ajout de contenu (5 colonnes sur grand écran) -->
+                <div class="lg:col-span-5 space-y-6">
+                    
+                    <!-- Panneau 1 : Ajouter du contenu -->
+                    <section class="bg-[#f5ebd6]/90 p-5 rounded-2xl border border-[#d6bc8b] shadow-sm">
+                        <div class="flex items-center gap-2 mb-4">
+                            <i data-lucide="feather" class="w-5 h-5 text-[#9c6621]"></i>
+                            <h2 class="text-lg font-semibold text-[#3d2817] papyrus-font">Nouvelle inscription</h2>
+                        </div>
 
-      <div class="row">
-        <button id="export-json" type="button" class="ghost">Exporter mes notes</button>
-        <button id="import-json" type="button" class="ghost">Importer</button>
-        <input type="file" id="import-file" accept="application/json,.json" hidden>
-        <button id="clear-all" type="button" class="danger">Tout effacer</button>
-      </div>
+                        <div class="space-y-4">
+                            <!-- Sélecteur de type -->
+                            <div>
+                                <label for="content-type" class="block text-xs font-medium text-[#75583c] uppercase tracking-wider mb-1.5">Type de contenu</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button type="button" data-type="message" class="type-tab active flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-sm font-medium border bg-[#9c6621] text-[#fdf6e7] border-[#9c6621] transition cursor-pointer">
+                                        <i data-lucide="file-text" class="w-4 h-4"></i> Note
+                                    </button>
+                                    <button type="button" data-type="photo" class="type-tab flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-sm font-medium border bg-[#fdf9f0] text-[#5c432b] border-[#d6bc8b] hover:bg-[#f0e2c6] transition cursor-pointer">
+                                        <i data-lucide="image" class="w-4 h-4"></i> Photo
+                                    </button>
+                                    <button type="button" data-type="audio" class="type-tab flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-sm font-medium border bg-[#fdf9f0] text-[#5c432b] border-[#d6bc8b] hover:bg-[#f0e2c6] transition cursor-pointer">
+                                        <i data-lucide="music" class="w-4 h-4"></i> Audio
+                                    </button>
+                                </div>
+                                <input type="hidden" id="content-type" value="message">
+                            </div>
 
-      <p class="hint">
-        Le verrou masque l’affichage : les notes restent enregistrées en clair dans ce navigateur.
-        Mot de passe par défaut : <code>motdepasse</code> — pensez à le changer.
-      </p>
-    </section>
+                            <!-- Titre optionnel -->
+                            <div>
+                                <label for="entry-title" class="block text-xs font-medium text-[#75583c] uppercase tracking-wider mb-1">Titre (optionnel)</label>
+                                <input type="text" id="entry-title" placeholder="Ex: Chronique du jour, Souvenir..." class="w-full px-3.5 py-2 bg-[#fdf9f0] border border-[#d6bc8b] rounded-xl text-sm text-[#3d2817] placeholder-[#a68c6e] focus:outline-none focus:ring-2 focus:ring-[#9c6621]">
+                            </div>
 
-    <section class="input-area">
-      <h2>Ajouter une note</h2>
+                            <!-- Zone dynamique selon le type -->
+                            <div id="dynamic-input-container">
+                                <label id="input-label" for="content-input" class="block text-xs font-medium text-[#75583c] uppercase tracking-wider mb-1">Votre message</label>
+                                <textarea 
+                                    id="content-input" 
+                                    rows="4" 
+                                    placeholder="Écrivez vos pensées sur le parchemin..." 
+                                    class="w-full px-3.5 py-2.5 bg-[#fdf9f0] border border-[#d6bc8b] rounded-xl text-sm text-[#3d2817] placeholder-[#a68c6e] papyrus-font focus:outline-none focus:ring-2 focus:ring-[#9c6621] resize-y"
+                                ></textarea>
+                                
+                                <!-- Option d'import de fichier local (cachée pour le texte) -->
+                                <div id="file-upload-wrapper" class="hidden mt-3">
+                                    <label class="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-[#c7a875] rounded-xl cursor-pointer bg-[#fdf9f0] hover:bg-[#f5ebd6] transition">
+                                        <div class="flex flex-col items-center justify-center pt-2 pb-3">
+                                            <i data-lucide="upload-cloud" class="w-6 h-6 text-[#9c6621] mb-1"></i>
+                                            <p class="text-xs text-[#5c432b]"><span class="font-semibold">Cliquez pour importer</span> un fichier local</p>
+                                            <p id="file-name-display" class="text-[11px] text-[#8a6b4e] mt-0.5">Ou collez une URL ci-dessus</p>
+                                        </div>
+                                        <input id="file-input" type="file" class="hidden" />
+                                    </label>
+                                </div>
+                            </div>
 
-      <div class="row">
-        <label for="content-type">Type</label>
-        <select id="content-type">
-          <option value="message">Message écrit</option>
-          <option value="photo">Photo</option>
-          <option value="audio">Audio</option>
-        </select>
-      </div>
+                            <button 
+                                id="save-content" 
+                                class="w-full py-2.5 px-4 bg-[#8a5619] hover:bg-[#734612] text-[#fdf6e7] font-medium text-sm rounded-xl shadow-sm flex items-center justify-center gap-2 transition cursor-pointer"
+                            >
+                                <i data-lucide="save" class="w-4 h-4"></i>
+                                Inscrire sur le Papyrus
+                            </button>
+                        </div>
+                    </section>
 
-      <textarea id="content-input" placeholder="Écrivez votre message…"></textarea>
+                    <!-- Panneau 2 : Paramètres & Apparence -->
+                    <section class="bg-[#f5ebd6]/90 p-5 rounded-2xl border border-[#d6bc8b] shadow-sm">
+                        <div class="flex items-center gap-2 mb-4">
+                            <i data-lucide="palette" class="w-5 h-5 text-[#9c6621]"></i>
+                            <h2 class="text-lg font-semibold text-[#3d2817] papyrus-font">Teintes & Sceau</h2>
+                        </div>
 
-      <div class="row" id="photo-row" hidden>
-        <input type="file" id="photo-file" accept="image/*">
-        <span class="hint">ou une URL :</span>
-        <input type="url" id="photo-url" placeholder="https://exemple.com/photo.jpg">
-      </div>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-[#fdf9f0] p-3 rounded-xl border border-[#d6bc8b] flex items-center justify-between">
+                                    <label for="bg-color" class="text-xs font-medium text-[#5c432b]">Fond papyrus</label>
+                                    <input type="color" id="bg-color" value="#ebd9b4" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent">
+                                </div>
+                                <div class="bg-[#fdf9f0] p-3 rounded-xl border border-[#d6bc8b] flex items-center justify-between">
+                                    <label for="text-color" class="text-xs font-medium text-[#5c432b]">Encre texte</label>
+                                    <input type="color" id="text-color" value="#3d2b1f" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent">
+                                </div>
+                            </div>
 
-      <div class="row" id="audio-row" hidden>
-        <input type="url" id="audio-url" placeholder="https://exemple.com/son.mp3">
-      </div>
+                            <!-- Changer le mot de passe -->
+                            <div class="pt-2 border-t border-[#d6bc8b]">
+                                <label for="new-password" class="block text-xs font-medium text-[#75583c] uppercase tracking-wider mb-1">Modifier le mot de passe</label>
+                                <div class="flex gap-2">
+                                    <input type="password" id="new-password" placeholder="Nouveau mot de passe..." class="flex-1 px-3 py-1.5 bg-[#fdf9f0] border border-[#d6bc8b] rounded-xl text-sm text-[#3d2817] placeholder-[#a68c6e] focus:outline-none focus:ring-2 focus:ring-[#9c6621]">
+                                    <button id="save-settings" class="px-3.5 py-1.5 bg-[#3d2817] hover:bg-[#523720] text-[#fdf6e7] text-xs font-medium rounded-xl transition cursor-pointer">
+                                        Appliquer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
 
-      <button id="save-content" type="button">Ajouter la note</button>
-    </section>
+                <!-- Colonne de droite : Contenu Sauvegardé (7 colonnes sur grand écran) -->
+                <div class="lg:col-span-7 flex flex-col">
+                    <div class="bg-[#f5ebd6]/90 p-5 rounded-2xl border border-[#d6bc8b] shadow-sm flex-1 flex flex-col">
+                        <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#d6bc8b]">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="book-marked" class="w-5 h-5 text-[#9c6621]"></i>
+                                <h2 class="text-lg font-semibold text-[#3d2817] papyrus-font">Mes Parchemins & Souvenirs</h2>
+                                <span id="entries-count" class="ml-1 px-2 py-0.5 text-xs font-semibold bg-[#e6d1a5] text-[#5c3d16] rounded-full">0</span>
+                            </div>
+                            <button id="clear-all-btn" class="text-xs text-[#a83228] hover:text-[#82221a] font-medium flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-[#ebd7c3] transition cursor-pointer">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Tout effacer
+                            </button>
+                        </div>
 
-    <section class="saved-content">
-      <h2>Notes <span id="notes-count" class="count">0</span></h2>
+                        <!-- Liste des entrées sauvegardées -->
+                        <div id="content-display" class="space-y-4 overflow-y-auto max-h-[620px] pr-1 flex-1">
+                            <!-- Les cartes de contenu seront injectées ici -->
+                        </div>
+                    </div>
+                </div>
 
-      <div id="content-display">
-        <p class="placeholder">Aucune note pour le moment.</p>
-      </div>
+            </div>
+        </main>
+    </div>
 
-      <div id="lock-overlay" class="lock-overlay" hidden>
-        <p class="lock-title">Notebook verrouillé</p>
-        <input type="password" id="unlock-password" placeholder="Mot de passe" autocomplete="current-password">
-        <button id="unlock-btn" type="button">Déverrouiller</button>
-        <p id="unlock-error" class="error" hidden>Mot de passe incorrect.</p>
-      </div>
-    </section>
-  </main>
+    <!-- Zone de notifications (Toast) remplaçant alert() -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
 
-  <script src="store.js"></script>
-  <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialisation des icônes Lucide
+            lucide.createIcons();
+
+            // --- Éléments du DOM ---
+            const passwordInput = document.getElementById('password-input');
+            const lockBtn = document.getElementById('lock-btn');
+            const lockIcon = document.getElementById('lock-icon');
+            const lockText = document.getElementById('lock-text');
+            const lockOverlay = document.getElementById('lock-overlay');
+            const notebookContent = document.getElementById('notebook-content');
+
+            const typeTabs = document.querySelectorAll('.type-tab');
+            const contentTypeInput = document.getElementById('content-type');
+            const entryTitleInput = document.getElementById('entry-title');
+            const inputLabel = document.getElementById('input-label');
+            const contentInput = document.getElementById('content-input');
+            const fileUploadWrapper = document.getElementById('file-upload-wrapper');
+            const fileInput = document.getElementById('file-input');
+            const fileNameDisplay = document.getElementById('file-name-display');
+            const saveContentBtn = document.getElementById('save-content');
+
+            const bgColorInput = document.getElementById('bg-color');
+            const textColorInput = document.getElementById('text-color');
+            const newPasswordInput = document.getElementById('new-password');
+            const saveSettingsBtn = document.getElementById('save-settings');
+
+            const contentDisplay = document.getElementById('content-display');
+            const entriesCount = document.getElementById('entries-count');
+            const clearAllBtn = document.getElementById('clear-all-btn');
+
+            // --- État de l'application (avec persistance localStorage et couleurs papyrus par défaut) ---
+            let state = {
+                isLocked: false,
+                password: localStorage.getItem('nb_password') || '1234',
+                bgColor: localStorage.getItem('nb_bgColor') || '#ebd9b4',
+                textColor: localStorage.getItem('nb_textColor') || '#3d2b1f',
+                entries: JSON.parse(localStorage.getItem('nb_entries') || '[]'),
+                uploadedDataUrl: null
+            };
+
+            // --- Système de notification Toast ---
+            function showToast(message, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                
+                const colors = {
+                    success: 'bg-[#4d6b3c] text-[#fdf9f0]',
+                    error: 'bg-[#99332b] text-[#fdf9f0]',
+                    info: 'bg-[#3d2817] text-[#fdf9f0]'
+                };
+                const icons = {
+                    success: 'check-circle',
+                    error: 'alert-circle',
+                    info: 'info'
+                };
+
+                toast.className = `toast-enter flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-sm font-medium border border-[#cfa96e]/40 ${colors[type]}`;
+                toast.innerHTML = `<i data-lucide="${icons[type]}" class="w-4 h-4 shrink-0"></i><span>${message}</span>`;
+                
+                container.appendChild(toast);
+                lucide.createIcons();
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(10px)';
+                    toast.style.transition = 'all 0.3s ease';
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // --- Application des couleurs sauvegardées ---
+            function applyTheme() {
+                document.body.style.backgroundColor = state.bgColor;
+                bgColorInput.value = state.bgColor;
+                textColorInput.value = state.textColor;
+                renderEntries();
+            }
+
+            // --- 1. Gestion du Verrouillage / Déverrouillage ---
+            lockBtn.addEventListener('click', () => {
+                const enteredPwd = passwordInput.value;
+
+                if (!state.isLocked) {
+                    // Action : Verrouiller le notebook
+                    if (enteredPwd === state.password) {
+                        state.isLocked = true;
+                        passwordInput.value = '';
+                        notebookContent.classList.add('hidden');
+                        lockOverlay.classList.remove('hidden');
+                        lockOverlay.classList.add('flex');
+                        
+                        lockText.textContent = 'Déverrouiller';
+                        lockIcon.setAttribute('data-lucide', 'unlock');
+                        lockBtn.classList.replace('bg-[#9c6621]', 'bg-[#b87a28]');
+                        lucide.createIcons();
+                        showToast('Manuscrit verrouillé avec succès.', 'info');
+                    } else {
+                        showToast('Mot de passe incorrect (défaut : 1234).', 'error');
+                    }
+                } else {
+                    // Action : Déverrouiller le notebook
+                    if (enteredPwd === state.password) {
+                        state.isLocked = false;
+                        passwordInput.value = '';
+                        notebookContent.classList.remove('hidden');
+                        lockOverlay.classList.add('hidden');
+                        lockOverlay.classList.remove('flex');
+
+                        lockText.textContent = 'Verrouiller';
+                        lockIcon.setAttribute('data-lucide', 'lock');
+                        lockBtn.classList.replace('bg-[#b87a28]', 'bg-[#9c6621]');
+                        lucide.createIcons();
+                        showToast('Manuscrit déverrouillé !', 'success');
+                    } else {
+                        showToast('Mot de passe incorrect.', 'error');
+                    }
+                }
+            });
+
+            // Permettre de valider le mot de passe avec la touche Entrée
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') lockBtn.click();
+            });
+
+            // --- 2. Gestion des Onglets de Type de Contenu ---
+            typeTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Mise à jour visuelle des boutons
+                    typeTabs.forEach(t => {
+                        t.classList.remove('bg-[#9c6621]', 'text-[#fdf6e7]', 'border-[#9c6621]');
+                        t.classList.add('bg-[#fdf9f0]', 'text-[#5c432b]', 'border-[#d6bc8b]');
+                    });
+                    tab.classList.remove('bg-[#fdf9f0]', 'text-[#5c432b]', 'border-[#d6bc8b]');
+                    tab.classList.add('bg-[#9c6621]', 'text-[#fdf6e7]', 'border-[#9c6621]');
+
+                    const selectedType = tab.dataset.type;
+                    contentTypeInput.value = selectedType;
+                    state.uploadedDataUrl = null;
+                    fileInput.value = '';
+                    fileNameDisplay.textContent = 'Ou collez une URL ci-dessus';
+
+                    if (selectedType === 'message') {
+                        inputLabel.textContent = 'Votre message';
+                        contentInput.placeholder = 'Écrivez vos pensées sur le parchemin...';
+                        contentInput.rows = 4;
+                        fileUploadWrapper.classList.add('hidden');
+                    } else if (selectedType === 'photo') {
+                        inputLabel.textContent = 'Lien de la photo (URL)';
+                        contentInput.placeholder = 'https://exemple.com/image.jpg';
+                        contentInput.rows = 2;
+                        fileUploadWrapper.classList.remove('hidden');
+                        fileInput.accept = 'image/*';
+                    } else if (selectedType === 'audio') {
+                        inputLabel.textContent = 'Lien du fichier audio (URL MP3/WAV)';
+                        contentInput.placeholder = 'https://exemple.com/musique.mp3';
+                        contentInput.rows = 2;
+                        fileUploadWrapper.classList.remove('hidden');
+                        fileInput.accept = 'audio/*';
+                    }
+                });
+            });
+
+            // Gestion de l'importation de fichier local (converti en DataURL)
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                if (file.size > 2.5 * 1024 * 1024) {
+                    showToast('Le fichier est trop volumineux (max 2.5 Mo pour la sauvegarde locale).', 'error');
+                    fileInput.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    state.uploadedDataUrl = event.target.result;
+                    fileNameDisplay.textContent = `Fichier prêt : ${file.name}`;
+                    showToast('Fichier chargé avec succès !', 'success');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // --- 3. Sauvegarde d'une Nouvelle Entrée ---
+            saveContentBtn.addEventListener('click', () => {
+                const type = contentTypeInput.value;
+                const title = entryTitleInput.value.trim();
+                const rawText = contentInput.value.trim();
+                const finalContent = state.uploadedDataUrl || rawText;
+
+                if (!finalContent) {
+                    showToast('Veuillez saisir du contenu ou importer un fichier.', 'error');
+                    return;
+                }
+
+                const newEntry = {
+                    id: Date.now(),
+                    type: type,
+                    title: title || (type === 'message' ? 'Note manuscrite' : type === 'photo' ? 'Illustration' : 'Récit audio'),
+                    content: finalContent,
+                    date: new Date().toLocaleDateString('fr-FR', {
+                        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                    })
+                };
+
+                state.entries.unshift(newEntry);
+                saveEntriesToStorage();
+                renderEntries();
+
+                entryTitleInput.value = '';
+                contentInput.value = '';
+                fileInput.value = '';
+                state.uploadedDataUrl = null;
+                fileNameDisplay.textContent = 'Ou collez une URL ci-dessus';
+
+                showToast('Entrée ajoutée au papyrus !', 'success');
+            });
+
+            // --- 4. Affichage des Entrées Sauvegardées ---
+            function renderEntries() {
+                entriesCount.textContent = state.entries.length;
+                contentDisplay.innerHTML = '';
+
+                if (state.entries.length === 0) {
+                    contentDisplay.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-16 text-center text-[#8a6b4e]">
+                            <i data-lucide="scroll" class="w-12 h-12 mb-3 opacity-50"></i>
+                            <p class="text-sm font-medium papyrus-font">Ce parchemin est encore vierge.</p>
+                            <p class="text-xs mt-1">Ajoutez une note, une photo ou un audio à gauche.</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return;
+                }
+
+                state.entries.forEach(entry => {
+                    const card = document.createElement('div');
+                    card.className = 'papyrus-card p-4 rounded-xl border shadow-sm hover:shadow-md transition group';
+                    
+                    let badgeHtml = '';
+                    let bodyHtml = '';
+
+                    if (entry.type === 'message') {
+                        badgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-[#efe0c2] text-[#7a4b16]"><i data-lucide="file-text" class="w-3 h-3"></i> Note</span>`;
+                        bodyHtml = `<p class="text-sm leading-relaxed whitespace-pre-wrap mt-2 papyrus-font" style="color: ${state.textColor}">${escapeHTML(entry.content)}</p>`;
+                    } else if (entry.type === 'photo') {
+                        badgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-[#e3ebd8] text-[#3d5c2b]"><i data-lucide="image" class="w-3 h-3"></i> Photo</span>`;
+                        bodyHtml = `
+                            <div class="mt-3 rounded-lg overflow-hidden bg-[#f4ead5] border border-[#d6bc8b]">
+                                <img src="${escapeHTML(entry.content)}" alt="${escapeHTML(entry.title)}" class="w-full max-h-72 object-contain mx-auto" onerror="this.onerror=null;this.src='https://placehold.co/600x300/ebd9b4/5c432b?text=Image+introuvable';">
+                            </div>
+                        `;
+                    } else if (entry.type === 'audio') {
+                        badgeHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-[#ebd8d0] text-[#783828]"><i data-lucide="music" class="w-3 h-3"></i> Audio</span>`;
+                        bodyHtml = `
+                            <div class="mt-3 bg-[#f4ead5] p-2.5 rounded-lg border border-[#d6bc8b]">
+                                <audio controls class="w-full h-9">
+                                    <source src="${escapeHTML(entry.content)}">
+                                    Votre navigateur ne supporte pas la lecture audio.
+                                </audio>
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    ${badgeHtml}
+                                    <span class="text-[11px] text-[#8a6b4e]">${entry.date}</span>
+                                </div>
+                                <h3 class="font-semibold text-[#3d2817] text-base papyrus-font">${escapeHTML(entry.title)}</h3>
+                            </div>
+                            <button onclick="deleteEntry(${entry.id})" title="Supprimer" class="p-1.5 text-[#9c8061] hover:text-[#a83228] hover:bg-[#f2e2cf] rounded-lg transition cursor-pointer">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        ${bodyHtml}
+                    `;
+                    contentDisplay.appendChild(card);
+                });
+
+                lucide.createIcons();
+            }
+
+            // Suppression d'une entrée spécifique
+            window.deleteEntry = function(id) {
+                state.entries = state.entries.filter(item => item.id !== id);
+                saveEntriesToStorage();
+                renderEntries();
+                showToast('Entrée effacée du parchemin.', 'info');
+            };
+
+            // Tout effacer
+            clearAllBtn.addEventListener('click', () => {
+                if (state.entries.length === 0) return;
+                state.entries = [];
+                saveEntriesToStorage();
+                renderEntries();
+                showToast('Toutes les entrées ont été effacées.', 'info');
+            });
+
+            // --- 5. Gestion des Paramètres ---
+            bgColorInput.addEventListener('input', (e) => {
+                state.bgColor = e.target.value;
+                document.body.style.backgroundColor = state.bgColor;
+            });
+
+            textColorInput.addEventListener('input', (e) => {
+                state.textColor = e.target.value;
+                renderEntries();
+            });
+
+            saveSettingsBtn.addEventListener('click', () => {
+                localStorage.setItem('nb_bgColor', state.bgColor);
+                localStorage.setItem('nb_textColor', state.textColor);
+
+                const newPwd = newPasswordInput.value.trim();
+                if (newPwd) {
+                    state.password = newPwd;
+                    localStorage.setItem('nb_password', newPwd);
+                    newPasswordInput.value = '';
+                    showToast('Teintes et nouveau mot de passe sauvegardés !', 'success');
+                } else {
+                    showToast('Apparence papyrus sauvegardée !', 'success');
+                }
+            });
+
+            // --- Utilitaires ---
+            function saveEntriesToStorage() {
+                try {
+                    localStorage.setItem('nb_entries', JSON.stringify(state.entries));
+                } catch (e) {
+                    showToast('Espace de stockage local saturé.', 'error');
+                }
+            }
+
+            function escapeHTML(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // Initialisation au chargement
+            applyTheme();
+        });
+    </script>
 </body>
 </html>

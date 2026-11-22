@@ -1,43 +1,44 @@
-# Mon Notebook
+# Mon Notebook Papyrus
 
-Carnet personnel statique (HTML / CSS / JavaScript), sans serveur ni base de données :
-les notes sont stockées dans le navigateur via `localStorage`.
+Carnet personnel manuscrit, multimédia et personnalisable — **une seule page HTML**
+(`index.html`), sans serveur ni base de données. Tout tient dans le navigateur.
 
 ## Fonctionnalités
 
-- Notes de trois types : **message**, **photo** (fichier ou URL), **audio** (URL).
-- Suppression note par note, ou effacement complet.
-- Couleurs de fond et de texte personnalisables, mémorisées.
-- Verrou par mot de passe qui masque réellement les notes.
-- Export / import de toutes les notes dans un fichier JSON (sauvegarde).
-- Raccourci : `Ctrl + Entrée` dans la zone de texte pour ajouter la note.
+- **Trois types d'entrées** : note écrite, photo, audio (URL ou fichier local importé).
+- **Persistance** : les entrées, les couleurs et le mot de passe sont conservés
+  dans le `localStorage` du navigateur (`nb_entries`, `nb_bgColor`, `nb_textColor`, `nb_password`).
+- **Verrou** par mot de passe qui masque réellement le contenu (flou + écran « Manuscrit Scellé »).
+- **Thème papyrus** : couleurs de fond et d'encre personnalisables, police Lora pour le texte.
+- **Gestion** : suppression entrée par entrée, « Tout effacer », notifications toast.
 
 ## Utilisation
 
-1. Ouvrir `index.html` (ou l'adresse publiée).
-2. Mot de passe par défaut du verrou : `motdepasse` — à changer dans **Paramètres**.
+1. Ouvrir l'adresse publiée (ou `index.html` en local).
+2. Mot de passe par défaut : **`1234`** — à changer dans *Teintes & Sceau*.
 
-## Limites assumées
+## Stack
 
-- Les notes vivent **dans le navigateur** : vider le cache ou changer d'appareil les perd.
-  Utilisez **Exporter mes notes** pour une sauvegarde, puis **Importer** sur un autre appareil.
-- Le verrou est une protection d'**affichage** : les données restent lisibles dans les outils
-  de développement du navigateur. Ce n'est pas du chiffrement.
-- Les photos sont limitées à 1,2 Mo (quota `localStorage` ≈ 5 Mo) ; au-delà, préférez une URL.
-
-## Structure
-
-| Fichier | Rôle |
+| Élément | Détail |
 |---|---|
-| `index.html` | structure de la page |
-| `style.css` | mise en forme |
-| `store.js` | logique pure (stockage, validation, export) — testable hors navigateur |
-| `script.js` | interface et événements DOM |
+| Style | Tailwind CSS (CDN) + CSS personnalisé pour le papier |
+| Icônes | Lucide (CDN) |
+| Polices | Inter + Lora (Google Fonts) |
+| Logique | JavaScript natif, un seul `<script>` en fin de page |
+| Stockage | `localStorage` (≈ 5 Mo par navigateur) |
 
-## Tests
+> Les trois CDN imposent une connexion Internet côté visiteur ; sans réseau, la page
+> s'affiche mais sans style ni icônes.
 
-Les tests de la logique métier sont dans le dépôt de déploiement, côté machine :
-`node test-store.cjs` — 16 cas (persistance, validations, export/import, quota).
+## Limites connues
+
+- Les données restent **dans le navigateur** : vider le cache ou changer d'appareil les perd.
+- Le verrou est une protection d'**affichage** : les entrées sont lisibles dans les outils
+  de développement. Ce n'est pas du chiffrement.
+- Les fichiers importés sont convertis en base64 et stockés dans `localStorage` : la limite
+  est de **2,5 Mo par fichier**, mais le quota global (~5 Mo) sature vite. Préférez une URL
+  pour les photos et les audios volumineux.
+- Le mot de passe n'est pas haché : il est stocké en clair dans le navigateur.
 
 ## Déploiement
 
@@ -48,3 +49,9 @@ Les tests de la logique métier sont dans le dépôt de déploiement, côté mac
 
 Fichiers nginx : `/etc/nginx/sites-available/mon-notebook` (port 80, site par IP)
 et `/etc/nginx/sites-available/mon-notebook-nipio` (HTTPS + redirection).
+
+## Historique des versions
+
+- **Version actuelle** : interface Papyrus, fichier unique.
+- Branche `v2-localstorage` : version précédente éclatée en `index.html` / `style.css` /
+  `script.js` / `store.js`, avec stockage structuré et export/import JSON.
