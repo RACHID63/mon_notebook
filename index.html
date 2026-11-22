@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Notebook Personnalisable</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="background-color: #e0e0e0;">
+    <div id="notebook-container">
+        <header>
+            <h1>Mon Notebook</h1>
+            <div class="controls">
+                <label for="password">Mot de passe:</label>
+                <input type="password" id="password" placeholder="Entrez votre mot de passe">
+                <button id="lock-btn">Verrouiller</button>
+            </div>
+        </header>
+
+        <div id="notebook-content" class="content-area">
+            <div class="settings-panel">
+                <h2>Paramètres du Notebook</h2>
+                <label for="bg-color">Couleur de fond:</label>
+                <input type="color" id="bg-color" value="#f0f0f0">
+                <label for="text-color">Couleur du texte:</label>
+                <input type="color" id="text-color" value="#333333">
+                <button id="save-settings">Sauvegarder les paramètres</button>
+            </div>
+
+            <div class="input-area">
+                <h2>Ajouter du contenu</h2>
+                <select id="content-type">
+                    <option value="message">Message écrit</option>
+                    <option value="photo">Photo</option>
+                    <option value="audio">Audio</option>
+                </select>
+                <textarea id="content-input" placeholder="Écrivez votre message ici... (ou ajoutez un lien photo/audio)"></textarea>
+                <button id="save-content">Sauvegarder le contenu</button>
+            </div>
+
+            <div class="saved-content">
+                <h2>Contenu Sauvegardé</h2>
+                <div id="content-display">
+                    <p class="placeholder">Le contenu sera affiché ici après sauvegarde.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

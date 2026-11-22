@@ -1,0 +1,71 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+#notebook-container {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 1000px;
+    padding: 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    margin: 0;
+    color: #333;
+}
+
+.controls label, .controls input, .controls button {
+    margin-right: 10px;
+}
+
+.content-area {
+    display: flex;
+    gap: 20px;
+}
+
+.settings-panel, .input-area, .saved-content {
+    flex: 1;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+#content-display {
+    min-height: 200px;
+    padding: 10px;
+    border: 1px dashed #ccc;
+    background-color: #f9f9f9;
+    white-space: pre-wrap; /* Pour conserver les sauts de ligne */
+}
+
+.placeholder {
+    color: #999;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Style pour le mode verrouillé (simulé) */
+.locked #notebook-container {
+    filter: grayscale(100%);
+}
+.locked #notebook-container h1, .locked #notebook-container label, .locked #notebook-container input, .locked #notebook-container button {
+    color: #555;
+}
